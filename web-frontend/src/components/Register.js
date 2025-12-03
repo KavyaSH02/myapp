@@ -29,7 +29,7 @@ const RegisterScreen = () => {
     }
 
     try {
-      const res = await axios.post(`${API_BASE_URL}/api/register`, { name, email, password, phone });
+      await axios.post(`${API_BASE_URL}/api/register`, { name, email, password, phone });
       alert('Registration successful!');
       navigate('/dashboard');
     } catch (err) {
