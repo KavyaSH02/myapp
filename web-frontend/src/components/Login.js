@@ -1,8 +1,6 @@
 import React, { useState } from 'react';
 import { Box, Typography, TextField, Button, Link } from '@mui/material';
-import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import API_BASE_URL from '../config';
 
 const LoginScreen = () => {
   const [email, setEmail] = useState('');
@@ -10,19 +8,23 @@ const LoginScreen = () => {
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
-  const handleLogin = async () => {
+  const handleLogin = () => {
     // Basic validation
     if (!email || !password) {
       setError('Please enter both email and password');
       return;
     }
 
-    try {
-      const res = await axios.post(`${API_BASE_URL}/api/login`, { email, password });
-      localStorage.setItem('token', res.data.token);
+    // Offline login - check localStorage
+    const users = JSON.parse(localStorage.getItem('users') || '[]');
+    const user = users.find(u => u.email === email && u.password === password);
+    
+    if (user) {
+      localStorage.setItem('currentUser', JSON.stringify(user));
+      localStorage.setItem('isLoggedIn', 'true');
       navigate('/dashboard');
-    } catch (err) {
-      setError(err.response?.data?.message || 'Login failed');
+    } else {
+      setError('Invalid email or password');
     }
   };
 
