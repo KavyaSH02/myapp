@@ -1,8 +1,6 @@
 import React, { useState } from 'react';
 import { Box, Typography, TextField, Button } from '@mui/material';
-import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import API_BASE_URL from '../config';
 
 const RegisterScreen = () => {
   const [name, setName] = useState('');
