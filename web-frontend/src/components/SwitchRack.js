@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
-import API_BASE_URL from "../config";
+import { useNavigate, Link } from "react-router-dom";
 import "../attendance.css";
 
 const SwitchRack = () => {
+  const navigate = useNavigate();
   const [form, setForm] = useState({
     date: "",
     details: "",
@@ -17,41 +17,29 @@ const SwitchRack = () => {
   const [records, setRecords] = useState([]);
   const [editingId, setEditingId] = useState(null);
 
-  // Load data from backend and localStorage on component mount
+  const handleLogout = () => {
+    localStorage.removeItem('isLoggedIn');
+    localStorage.removeItem('currentUser');
+    navigate('/');
+  };
+
+  // Load data from localStorage on component mount
   useEffect(() => {
-    const loadData = async () => {
-      try {
-        const response = await axios.get(`${API_BASE_URL}/api/switch-rack`);
-        setRecords(response.data);
-        localStorage.setItem('switchRackRecords', JSON.stringify(response.data));
-      } catch (error) {
-        const savedRecords = localStorage.getItem('switchRackRecords');
-        if (savedRecords) {
-          setRecords(JSON.parse(savedRecords));
-        }
-      }
-    };
-    loadData();
+    const savedRecords = localStorage.getItem('switchRackRecords');
+    if (savedRecords) {
+      setRecords(JSON.parse(savedRecords));
+    }
   }, []);
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
-    
-    try {
-      await axios.post(`${API_BASE_URL}/api/switch-rack`, form);
-      const updatedData = await axios.get(`${API_BASE_URL}/api/switch-rack`);
-      setRecords(updatedData.data);
-    } catch (error) {
-      const newRecords = [...records, form];
-      setRecords(newRecords);
-      localStorage.setItem('switchRackRecords', JSON.stringify(newRecords));
-      alert('Saved locally (backend unavailable)');
-    }
-    
+    const newRecords = [...records, { ...form, id: Date.now() }];
+    setRecords(newRecords);
+    localStorage.setItem('switchRackRecords', JSON.stringify(newRecords));
     setForm({ date: "", details: "", unit: "", received: "", issued: "", balance: "", sign: "" });
   };
 
@@ -68,42 +56,39 @@ const SwitchRack = () => {
     setEditingId(row.id || index);
   };
 
-  const handleUpdate = async (e) => {
+  const handleUpdate = (e) => {
     e.preventDefault();
-    
-    try {
-      await axios.put(`${API_BASE_URL}/api/switch-rack/${editingId}`, form);
-      const updatedData = await axios.get(`${API_BASE_URL}/api/switch-rack`);
-      setRecords(updatedData.data);
-    } catch (error) {
-      const newRecords = records.map((record, index) => 
-        (record.id === editingId || index === editingId) ? { ...record, ...form } : record
-      );
-      setRecords(newRecords);
-      localStorage.setItem('switchRackRecords', JSON.stringify(newRecords));
-      alert('Updated locally (backend unavailable)');
-    }
-    
+    const newRecords = records.map((record, index) => 
+      (record.id === editingId || index === editingId) ? { ...record, ...form } : record
+    );
+    setRecords(newRecords);
+    localStorage.setItem('switchRackRecords', JSON.stringify(newRecords));
     setForm({ date: "", details: "", unit: "", received: "", issued: "", balance: "", sign: "" });
     setEditingId(null);
   };
 
-  const handleDelete = async (id, index) => {
+  const handleDelete = (id, index) => {
     if (!window.confirm('Are you sure you want to delete this record?')) return;
-    
-    try {
-      await axios.delete(`${API_BASE_URL}/api/switch-rack/${id}`);
-      const updatedData = await axios.get(`${API_BASE_URL}/api/switch-rack`);
-      setRecords(updatedData.data);
-    } catch (error) {
-      const newRecords = records.filter((_, i) => i !== index);
-      setRecords(newRecords);
-      localStorage.setItem('switchRackRecords', JSON.stringify(newRecords));
-    }
+    const newRecords = records.filter((_, i) => i !== index);
+    setRecords(newRecords);
+    localStorage.setItem('switchRackRecords', JSON.stringify(newRecords));
   };
 
   return (
     <div className="container">
+      <div style={{ marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div>
+          <Link to="/dashboard" style={{ padding: '10px 20px', backgroundColor: '#007bff', color: 'white', textDecoration: 'none', borderRadius: '5px', marginRight: '10px' }}>
+            Back to Dashboard
+          </Link>
+          <Link to="/work-station" style={{ padding: '10px 20px', backgroundColor: '#28a745', color: 'white', textDecoration: 'none', borderRadius: '5px' }}>
+            Go to Work Station
+          </Link>
+        </div>
+        <button onClick={handleLogout} style={{ padding: '10px 20px', backgroundColor: '#dc3545', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer' }}>
+          Logout
+        </button>
+      </div>
       <h2>Switch Rack Entry</h2>
 
       <form onSubmit={editingId ? handleUpdate : handleSubmit} className="stock-form">
