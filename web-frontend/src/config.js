@@ -1,8 +1,6 @@
-const API_BASE_URL = process.env.REACT_APP_API_URL || 
-  (process.env.NODE_ENV === 'production' 
-    ? null // Force offline mode in production
-    : 'http://localhost:5000');
+// Force offline mode for all environments
+const API_BASE_URL = null;
 
-console.log('API Base URL:', API_BASE_URL);
+console.log('Running in offline mode');
 
 export default API_BASE_URL;

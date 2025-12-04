@@ -28,39 +28,18 @@ const RegisterScreen = () => {
       return;
     }
 
-    try {
-      if (!API_BASE_URL) {
-        // Offline mode - store in localStorage
-        const users = JSON.parse(localStorage.getItem('users') || '[]');
-        if (users.find(u => u.email === email)) {
-          setError('Email already exists');
-          return;
-        }
-        users.push({ name, email, password, phone, id: Date.now() });
-        localStorage.setItem('users', JSON.stringify(users));
-        localStorage.setItem('currentUser', JSON.stringify({ name, email }));
-        alert('Registration successful! (Offline mode)');
-        navigate('/dashboard');
-        return;
-      }
-      
-      const response = await axios.post(`${API_BASE_URL}/api/register`, { name, email, password, phone });
-      alert('Registration successful!');
-      navigate('/dashboard');
-    } catch (err) {
-      console.error('Registration error:', err);
-      // Fallback to offline mode
-      const users = JSON.parse(localStorage.getItem('users') || '[]');
-      if (users.find(u => u.email === email)) {
-        setError('Email already exists');
-        return;
-      }
-      users.push({ name, email, password, phone, id: Date.now() });
-      localStorage.setItem('users', JSON.stringify(users));
-      localStorage.setItem('currentUser', JSON.stringify({ name, email }));
-      alert('Registration successful! (Offline mode)');
-      navigate('/dashboard');
+    // Offline mode - store in localStorage
+    const users = JSON.parse(localStorage.getItem('users') || '[]');
+    if (users.find(u => u.email === email)) {
+      setError('Email already exists');
+      return;
     }
+    
+    users.push({ name, email, password, phone, id: Date.now() });
+    localStorage.setItem('users', JSON.stringify(users));
+    localStorage.setItem('currentUser', JSON.stringify({ name, email }));
+    alert('Registration successful!');
+    navigate('/dashboard');
   };
 
   return (
